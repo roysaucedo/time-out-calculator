@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Hours Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .calculator {
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="time"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Work Hours Calculator</h1>
+    <div class="calculator">
+        <div class="form-group">
+            <label for="startTime">Start Time:</label>
+            <input type="time" id="startTime" required>
+        </div>
+        <div class="form-group">
+            <label for="lunchStart">Lunch Start:</label>
+            <input type="time" id="lunchStart" required>
+        </div>
+        <div class="form-group">
+            <label for="lunchEnd">Lunch End:</label>
+            <input type="time" id="lunchEnd" required>
+        </div>
+        <button onclick="calculateLeaveTime()">Calculate</button>
+        <div id="result" class="result hidden">
+            Leave at: <span id="leaveTime"></span>
+        </div>
+    </div>
+
+    <script>
+        function calculateLeaveTime() {
+            // Get input values
+            const startTime = document.getElementById('startTime').value;
+            const lunchStart = document.getElementById('lunchStart').value;
+            const lunchEnd = document.getElementById('lunchEnd').value;
+            
+            // Validate inputs
+            if (!startTime || !lunchStart || !lunchEnd) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Convert time strings to Date objects
+            const startDate = new Date(`2000-01-01T${startTime}`);
+            const lunchStartDate = new Date(`2000-01-01T${lunchStart}`);
+            const lunchEndDate = new Date(`2000-01-01T${lunchEnd}`);
+            
+            // Handle lunch crossing midnight if needed
+            if (lunchEndDate < lunchStartDate) {
+                lunchEndDate.setDate(lunchEndDate.getDate() + 1);
+            }
+            
+            // Calculate morning work duration (in milliseconds)
+            const morningDuration = lunchStartDate - startDate;
+            
+            // Calculate required afternoon duration (8 hours total - morning duration)
+            const totalWorkTimeMs = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
+            const requiredAfternoonMs = totalWorkTimeMs - morningDuration;
+            
+            // Calculate leave time
+            const leaveDate = new Date(lunchEndDate.getTime() + requiredAfternoonMs);
+            
+            // Format leave time for display
+            let hours = leaveDate.getHours();
+            const minutes = leaveDate.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            // Convert to 12-hour format
+            hours = hours % 12;
+            hours = hours ? hours : 12; // The hour '0' should be '12'
+            
+            const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+            const leaveTimeFormatted = `${hours}:${formattedMinutes} ${ampm}`;
+            
+            // Display result
+            document.getElementById('leaveTime').textContent = leaveTimeFormatted;
+            document.getElementById('result').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
